@@ -27,10 +27,10 @@ class DDPSender {
         );
     }
 
-    public function rpc($method, $args) {
+    public function rpc($id, $method, $args) {
         $this->send(
             '{"msg":"method","method":"' . $method .
-            '","params":' . $this->arrayToString($args) . ',"id":"1"}'
+            '","params":' . $this->arrayToString($args) . ',"id":"' . $id . '"}'
         );
     }
 
@@ -56,8 +56,8 @@ class DDPSender {
 
     private function send($msg)
     {
-        echo 'Sending ' . $msg . PHP_EOL;
-        $msg = \zyzo\WebSocketClient::draft10Encode($msg, true);
+        // echo 'Sending ' . $msg . PHP_EOL;
+        $msg = \zyzo\WebSocketClient::draft10Encode($msg, 'text', true);
         fwrite($this->sock, $msg);
     }
 

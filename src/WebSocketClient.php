@@ -4,6 +4,14 @@ namespace zyzo;
 class WebSocketClient {
 
     // source (not the real author though) : http://stackoverflow.com/questions/11016164/how-to-send-websocket-hybi-17-frame-with-php-server
+    const OPCODE_MASK = '15'; // 0x00001111
+    const PAYLOAD_LEN_MASK = '127'; // 0x01111111
+    const TEXT_FRAME = '1';
+    const BINARY_FRAME = '2';
+    const CLOSE_FRAME = '8';
+    const PING_FRAME = '9';
+    const PONG_FRAME = '10';
+
     public static function draft10Encode($payload, $type = 'text', $masked = true, $maskKey = null)
     {
         $frameHead = array();
@@ -85,9 +93,25 @@ class WebSocketClient {
         return $frame;
     }
 
-    // TODO : this is a stub. Real decoding mechanism is coming
     public static function draft10Decode($frame) {
-        return substr($frame, 2);
+        $frameNum = 0;
+        $frameLen = strlen($frame);
+        $ptr = 0;
+        $result = array();
+        while ($ptr < $frameLen) {
+            switch (ord($frame[0 + $ptr]) & WebSocketClient::OPCODE_MASK) {
+                case WebSocketClient::TEXT_FRAME :
+                    break;
+                case WebSocketClient::PING_FRAME :
+                    break;
+            }
+            $payloadLen = ord($frame[1 + $ptr]) & WebSocketClient::PAYLOAD_LEN_MASK;
+            $result[$frameNum] = substr($frame, 2 + $ptr, $payloadLen);
+            $ptr += $payloadLen + 2;
+            $frameNum += 1;
+        }
+
+        return $result;
     }
 
     public static function handshakeMessage($host) {

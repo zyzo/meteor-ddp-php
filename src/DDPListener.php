@@ -6,10 +6,11 @@ class DDPListener extends Thread{
     private $sender;
 
     /**
-     * @param $sock
-     * @param $eventListener EventListener
+     * @param $client DDPClient
+     * @param $sock resource
      */
-    public function __construct($sock, $eventListener) {
+    public function __construct($client, $sock) {
+        $this->client = $client;
         $this->sock = $sock;
         $this->sender = new DDPSender($sock);
     }
@@ -22,19 +23,11 @@ class DDPListener extends Thread{
     }
 
     private function process($data) {
-        $json = \zyzo\WebSocketClient::draft10Decode($data);
-        echo 'Receiving ' . $json . PHP_EOL;
-        $parsed = json_decode($json);
-        if ($parsed !== null && isset($parsed->msg)) {
-            switch ($parsed->msg) {
-                case 'ping' :
-                    $this->sender->pong();
-                    break;
-                case 'updated' :  // rpc method
-                    echo 'Haha, result is ' . $json . PHP_EOL;
-                default :
-                    echo 'Unknow message ! ' . PHP_EOL;
-            }
+        $jsons = \zyzo\WebSocketClient::draft10Decode($data);
+        foreach ($jsons as $json) {
+            // echo 'Receiving ' . $json . PHP_EOL;
+            $parsed = json_decode($json);
+            $this->client->onMessage($parsed);
         }
     }
 }
