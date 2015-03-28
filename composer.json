@@ -1,7 +1,25 @@
 {
-  "autoload": {
-    "psr-0": {
-      "zyzo": "src/"
+  "name" : "zyzo/meteor-ddp-php",
+  "description" : "DDP client for PHP",
+  "keywords" : ["DDP", "ddpclient", "meteor", "php"],
+  "type" : "library",
+  "homepage" : "https://github.com/zyzo/meteor-ddp-php",
+  "licence" : "MIT Licence",
+  "authors": [
+    {
+      "name" : "zyzo",
+      "homepage" : "https://github.com/zyzo"
     }
+  ],
+  "autoload": {
+    "psr-4": {
+      "zyzo\\MeteorDDP\\": "src/zyzo/MeteorDDP/"
+    }
+  },
+  "repositories": [
+  {
+    "type": "vcs",
+    "url": "https://github.com/zyzo/meteor-ddp-php"
   }
+  ]
 }

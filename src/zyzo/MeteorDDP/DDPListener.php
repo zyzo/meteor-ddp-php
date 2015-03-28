@@ -1,6 +1,7 @@
 <?php
+namespace zyzo\MeteorDDP;
 
-class DDPListener extends Thread{
+class DDPListener extends \Thread{
 
     private $sock;
     private $sender;
@@ -23,7 +24,7 @@ class DDPListener extends Thread{
     }
 
     private function process($data) {
-        $jsons = \zyzo\WebSocketClient::draft10Decode($data);
+        $jsons = WebSocketClient::draft10Decode($data);
         foreach ($jsons as $json) {
             // echo 'Receiving ' . $json . PHP_EOL;
             $parsed = json_decode($json);

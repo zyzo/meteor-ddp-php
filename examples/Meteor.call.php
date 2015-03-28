@@ -1,8 +1,7 @@
 <?php
-require_once __DIR__ . "/../src/WebSocketClient.php";
-require_once __DIR__ ."/../src/DDPListener.php";
-require_once __DIR__ ."/../src/DDPSender.php";
-require_once __DIR__ ."/../src/DDPClient.php";
+namespace zyzo\MeteorDDP\examples;
+use zyzo\MeteorDDP\DDPClient;
+require __DIR__ . '/../vendor/autoload.php';
 
 $client = new DDPClient('localhost', 3000);
 $client->connect();

@@ -1,13 +1,16 @@
 <?php
-require_once "../src/Utils.php";
-require_once "../src/WebSocketClient.php";
+namespace zyzo\MeteorDDP\tests;
+require __DIR__ . '/../vendor/autoload.php';
+use zyzo\MeteorDDP\Utils;
+use zyzo\MeteorDDP\WebSocketClient;
+
 
 echo '<h2>Unmasked frame</h2>';
-hex_dump(\zyzo\WebSocketClient::hybi10Encode('Hello', 'text', false));
+Utils::hex_dump(WebSocketClient::draft10Encode('Hello', 'text', false));
 echo '<br/>Expected : <br/>';
 echo '&nbsp&nbsp&nbsp&nbsp 81 05 48 65 6c 6c 6f (contains "Hello")';
 echo '<h2>Masked frame</h2>';
-hex_dump(\zyzo\WebSocketClient::hybi10Encode('Hello', 'text', true));
+Utils::hex_dump(WebSocketClient::draft10Encode('Hello', 'text', true));
 echo '<h2>Masked frame with known key</h2>';
 /**
  * @param $hexKey
@@ -25,7 +28,7 @@ function convertHexToMaskKey($hexKey) {
 }
 $maskKey = convertHexToMaskKey(array('37', 'fa', '21', '3d'));
 echo '<br/>';
-hex_dump(\zyzo\WebSocketClient::hybi10Encode('Hello', 'text', true, $maskKey));
+Utils::hex_dump(WebSocketClient::draft10Encode('Hello', 'text', true, $maskKey));
 echo '<br/>Expected : <br/>';
 echo '&nbsp&nbsp&nbsp&nbsp 81 85 37 fa 21 3d 7f 9f 4d 51 58';
 
@@ -33,7 +36,7 @@ echo '&nbsp&nbsp&nbsp&nbsp 81 85 37 fa 21 3d 7f 9f 4d 51 58';
 echo '<h2>DDP Connection</h2>';
 $maskKey = convertHexToMaskKey(array('6b', '5c', '75', '7f'));
 echo '<br/>';
-hex_dump(\zyzo\WebSocketClient::hybi10Encode('{"msg" : "connect", "version" : "1", "support" : ["1"]}', 'text', true, $maskKey) , '<br/>');
+Utils::hex_dump(WebSocketClient::draft10Encode('{"msg" : "connect", "version" : "1", "support" : ["1"]}', 'text', true, $maskKey) , '<br/>');
 echo '<br/>Expected : <br/>';
 
 echo '0000   10 7e 18 0c 0c 7e 55 45 4b 7e 16 10 05 32 10 1c  .~...~UEK~...2..<br/>

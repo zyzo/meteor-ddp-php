@@ -7,7 +7,7 @@
      
 ### How to use
 
-Suppose there is this in your meteor server code 
+Suppose you have declared a remote function `foo` in your meteor server code :
 ```javascript
 Meteor.methods({
   foo : function (arg) {
@@ -18,8 +18,9 @@ Meteor.methods({
 });
 ```
 
-In your php client's code, you could invoke `foo` by running this script
+Then in your php client's code, you could invoke `foo` by executing :
 ```php
+use zyzo\MeteorDDP\DDPClient;
 
 $client = new DDPClient('localhost', 3000);
 
@@ -33,16 +34,17 @@ echo 'Result = ' . $a . PHP_EOL;
 $client->stop();
 ```
 
-Result 
+===> 
 ```
 Result = 42
 ```
 
 
 ### Roadmap
-    - Nicer documentation & examples (include meteor example app)
-    - subscribe()
-    - asyncCall()
+* nicer documentation & examples (include meteor example app)
+* subscribe()
+* asyncCall()
+* handle errors properly
     
 ### Version
-0.0
+1.0.0-beta 

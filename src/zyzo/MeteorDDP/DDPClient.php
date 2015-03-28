@@ -1,4 +1,5 @@
 <?php
+namespace zyzo\MeteorDDP;
 
 class DDPClient {
 
@@ -40,10 +41,11 @@ class DDPClient {
         $errstr = 'Error connecting to Meteor server';
         $this->sock = fsockopen($host, $port, $errno, $errstr, 10);
         $this->sender = new DDPSender($this->sock);
-        $this->results = new Threaded();
+        $this->results = new \Threaded();
+
+        $handShakeMsg =  WebSocketClient::handshakeMessage($host . ':' . $port);
         $this->listener = new DDPListener($this, $this->sock);
         $this->listener->start();
-        $handShakeMsg =  \zyzo\WebSocketClient::handshakeMessage($host . ':' . $port);
         fwrite($this->sock, $handShakeMsg) or die('error:' . $errno . ':' . $errstr);
         $this->currentId = 0;
         $this->methodMap = array();

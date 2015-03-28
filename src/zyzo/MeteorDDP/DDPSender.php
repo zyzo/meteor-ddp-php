@@ -1,4 +1,6 @@
 <?php
+namespace zyzo\MeteorDDP;
+
 class DDPSender {
 
     private $sock;
@@ -57,7 +59,7 @@ class DDPSender {
     private function send($msg)
     {
         // echo 'Sending ' . $msg . PHP_EOL;
-        $msg = \zyzo\WebSocketClient::draft10Encode($msg, 'text', true);
+        $msg = WebSocketClient::draft10Encode($msg, 'text', true);
         fwrite($this->sock, $msg);
     }
 

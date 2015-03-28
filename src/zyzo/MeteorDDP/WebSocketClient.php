@@ -1,5 +1,5 @@
 <?php
-namespace zyzo;
+namespace zyzo\MeteorDDP;
 
 class WebSocketClient {
 
@@ -111,7 +111,6 @@ class WebSocketClient {
             $ptr += $payloadLen + 2;
             $frameNum += 1;
         }
-
         return $result;
     }
 
