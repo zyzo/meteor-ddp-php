@@ -3,15 +3,16 @@ namespace zyzo;
 
 class WebSocketClient {
 
-    // source (not the real author though) : http://stackoverflow.com/questions/11016164/how-to-send-websocket-hybi-17-frame-with-php-server
-    const OPCODE_MASK = '15'; // 0x00001111
-    const PAYLOAD_LEN_MASK = '127'; // 0x01111111
-    const TEXT_FRAME = '1';
-    const BINARY_FRAME = '2';
-    const CLOSE_FRAME = '8';
-    const PING_FRAME = '9';
-    const PONG_FRAME = '10';
+    const OPCODE_MASK = 15; // 0x00001111
+    const PAYLOAD_LEN_MASK = 127; // 0x01111111
+    const FIN_FRAME = 128;
+    const TEXT_FRAME = 1;
+    const BINARY_FRAME = 2;
+    const CLOSE_FRAME = 8;
+    const PING_FRAME = 9;
+    const PONG_FRAME = 10;
 
+    // source : http://stackoverflow.com/questions/11016164/how-to-send-websocket-hybi-17-frame-with-php-server
     public static function draft10Encode($payload, $type = 'text', $masked = true, $maskKey = null)
     {
         $frameHead = array();
@@ -22,22 +23,22 @@ class WebSocketClient {
         {
             case 'text':
                 // first byte indicates FIN, Text-Frame (10000001):
-                $frameHead[0] = 129;
+                $frameHead[0] = WebSocketClient::FIN_FRAME | WebSocketClient::TEXT_FRAME;
                 break;
 
             case 'close':
                 // first byte indicates FIN, Close Frame(10001000):
-                $frameHead[0] = 136;
+                $frameHead[0] = WebSocketClient::FIN_FRAME | WebSocketClient::CLOSE_FRAME;
                 break;
 
             case 'ping':
                 // first byte indicates FIN, Ping frame (10001001):
-                $frameHead[0] = 137;
+                $frameHead[0] = WebSocketClient::FIN_FRAME | WebSocketClient::PING_FRAME ;
                 break;
 
             case 'pong':
                 // first byte indicates FIN, Pong frame (10001010):
-                $frameHead[0] = 138;
+                $frameHead[0] = WebSocketClient::FIN_FRAME | WebSocketClient::PONG_FRAME;
                 break;
         }
 

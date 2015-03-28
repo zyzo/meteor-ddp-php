@@ -29,7 +29,7 @@ class DDPClient {
     private $currentId;
 
     /**
-     * When creating a DDPClient instance, a DDP connection will be
+     * When creating a DDPClient instance, a Websocket connection will be
      * automatically created. A meteor server should be running at $host:$port
      * @param string $host
      * @param int|null $port
@@ -49,14 +49,17 @@ class DDPClient {
         $this->methodMap = array();
     }
 
+    /**
+     * This function creates a DDP connection on top of the WebSocket channel.
+     * This must be called before the client could invoke server's method.
+     * @param int $version
+     * @param array $supportedVersions
+     */
     public function connect($version = 1, $supportedVersions = array(1)) {
         $this->sender->connect($version, $supportedVersions);
     }
 
-    public function checkConnection()
-    {
-
-    }
+    public function checkConnection() {}
 
     function call($method, $args) {
         $this->sender->rpc($this->currentId, $method, $args);
@@ -65,9 +68,11 @@ class DDPClient {
     }
 
     /**
-     * @param $method
-     * @return string the result in json format
-     *         return null if no result found
+     * @param string $method
+     *         name of the invoked method
+     * @return string
+     *         the result in json format
+     *         null if no result found
      */
     function getResult($method) {
         if (array_key_exists($method, $this->methodMap)) {
@@ -103,7 +108,11 @@ class DDPClient {
         $this->results[$message->id] = $message->result;
     }
 
-    function stop()
+    /**
+     * Stop DDP communication and child thread(s). This must be called when the
+     * DDP client is done talking to the server
+     */
+    public function stop()
     {
         $this->listener->kill();
     }
