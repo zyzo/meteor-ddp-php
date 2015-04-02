@@ -43,7 +43,7 @@ Result = 42
 ```
   and update composer to automatically retrieve the package :
 ```shell
-   php composer.phar update
+php composer.phar update
 ```
 
 ### Requirements : pthreads
