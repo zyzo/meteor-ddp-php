@@ -11,8 +11,8 @@ class DDPSender {
     }
 
     public function connect($version, $supported) {
-        $this->send('
-            {"msg":"connect","version":"'. $version . '","support": ' .
+        $this->send(
+            '{"msg":"connect","version":"'. $version . '","support": ' .
             $this->arrayToString($supported, true). '}', 'text'
         );
     }
@@ -58,9 +58,10 @@ class DDPSender {
 
     private function send($msg)
     {
-        // echo 'Sending ' . $msg . PHP_EOL;
         $msg = WebSocketClient::draft10Encode($msg, 'text', true);
-        fwrite($this->sock, $msg);
+        if (!fwrite($this->sock, $msg)) {
+            throw new \Exception('Socket write error! ' . PHP_EOL);
+        }
     }
 
 }

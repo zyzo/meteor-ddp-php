@@ -1,5 +1,6 @@
 <?php
 namespace zyzo\MeteorDDP;
+require __DIR__ . '/../../../vendor/autoload.php';
 
 class DDPClient {
 
@@ -34,6 +35,7 @@ class DDPClient {
      * automatically created. A meteor server should be running at $host:$port
      * @param string $host
      * @param int|null $port
+     * @throws \Exception
      */
     public function __construct($host, $port = 3000)
     {
@@ -44,9 +46,11 @@ class DDPClient {
         $this->results = new \Threaded();
 
         $handShakeMsg =  WebSocketClient::handshakeMessage($host . ':' . $port);
-        $this->listener = new DDPListener($this, $this->sock);
+        $this->listener = new DDPListener($this, $this->sender, $this->sock);
+        if (fwrite($this->sock, $handShakeMsg) === false) {
+            throw new \Exception('error:' . $errno . ':' . $errstr);
+        }
         $this->listener->start();
-        fwrite($this->sock, $handShakeMsg) or die('error:' . $errno . ':' . $errstr);
         $this->currentId = 0;
         $this->methodMap = array();
     }
@@ -72,17 +76,25 @@ class DDPClient {
     /**
      * @param string $method
      *         name of the invoked method
-     * @return string
-     *         the result in json format
-     *         null if no result found
+     * @return string the result in json format
+     * the result in json format
+     * null if no result found
+     * @throws \Exception
      */
     function getResult($method) {
+        $listener = $this->listener;
+        if (!$listener->isRunning()) {
+            throw new \Exception('Internal error : Socket listener has stopped running');
+        }
+        $result = null;
         if (array_key_exists($method, $this->methodMap)) {
             $id = $this->methodMap[$method];
-            $result = isset($this->results->$id) ? $this->results[$id] : null;
-            return $result;
+            if (isset($this->results->$id)) {
+                $result = isset($this->results->$id) ? $this->results->$id : null;
+                unset($this->results->$id);
+            }
         }
-        return null;
+        return $result;
     }
 
     public function onMessage($message)
@@ -98,6 +110,8 @@ class DDPClient {
                 default :
                     //echo 'Unknown message ! ' . PHP_EOL;
             }
+        } else {
+            // echo 'Unknown message ! ' . PHP_EOL;
         }
     }
 
