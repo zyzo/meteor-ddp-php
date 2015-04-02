@@ -5,8 +5,11 @@ use zyzo\MeteorDDP\DDPClient;
 
 $client = new DDPClient('localhost', 3000);
 $client->connect();
-$client->call("foo", array(1));
-while(($yo = $client->getResult("foo")) === null) { sleep(1);};
-echo 'Result = ' . $yo . PHP_EOL;
 
+for ($i = 0; $i < 100; $i++) {
+    $client->call("foo2", array(1));
+    while (($yo = $client->getResult("foo2")) === null) {
+    };
+    echo 'Result = ' . $yo . PHP_EOL;
+}
 $client->stop();
