@@ -1,10 +1,6 @@
 # meteor-ddp-php 
    A [minimalist](http://www.becomingminimalist.com/) PHP library that implements DDP client, the realtime protocol for [Meteor](https://www.meteor.com/ddp) framework.
-
-### Requirements : pthreads
-   pthreads is not part of php core library, and installing it in an non-supported php environment is hard work. Here's a pretty good tutorial on how to set up the whole thing from scratch : 
-   http://eddmann.com/posts/compiling-php-5-5-with-zts-and-pthreads-support/
-     
+  
 ### How to use
 
 Suppose you have declared a remote function `foo` in your meteor server code :
@@ -18,7 +14,7 @@ Meteor.methods({
 });
 ```
 
-Then in your php client's code, you could invoke `foo` by executing :
+Then in your php client's code, you could just invoke `foo` by executing :
 ```php
 use zyzo\MeteorDDP\DDPClient;
 
@@ -38,13 +34,26 @@ $client->stop();
 ```
 Result = 42
 ```
+### How to install
+   This library is available via [composer](https://packagist.org/packages/zyzo/meteor-ddp-php), the dependency manager for PHP. Please add this in your composer.json :
+```php
+"require" : {
+    "zyzo/meteor-ddp-php": "1.0.0"
+}
+```
+  and update composer to automatically retrieve the package :
+```shell
+   php composer.phar update
+```
+
+### Requirements : pthreads
+   pthreads is not part of php core library, and installing it in an non-supported php environment is hard work. Here's a pretty good tutorial on how to set up the whole thing from scratch : 
+   http://eddmann.com/posts/compiling-php-5-5-with-zts-and-pthreads-support/
 
 
 ### Roadmap
-* nicer documentation & examples (include meteor example app)
-* subscribe()
+* support for mongodb => subscribe() method
 * asyncCall()
-* handle errors properly
     
 ### Version
-1.0.0-beta 
+1.0.0 
