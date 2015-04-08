@@ -4,7 +4,7 @@
   "keywords" : ["DDP", "ddpclient", "meteor", "php"],
   "type" : "library",
   "homepage" : "https://github.com/zyzo/meteor-ddp-php",
-  "licence" : "MIT Licence",
+  "license" : "MIT Licence",
   "authors": [
     {
       "name" : "zyzo",
