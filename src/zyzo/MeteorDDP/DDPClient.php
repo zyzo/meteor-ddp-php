@@ -1,6 +1,8 @@
 <?php
 namespace zyzo\MeteorDDP;
 require __DIR__ . '/../../../vendor/autoload.php';
+use zyzo\MeteorDDP\asynccall\ResultPolling;
+use zyzo\MeteorDDP\asynccall\ThreadPool;
 
 class DDPClient {
 
@@ -22,14 +24,14 @@ class DDPClient {
      */
     private $methodMap;
     /**
-     * @var Threaded
+     * @var \Threaded
      */
     private $results;
     /**
      * @var int
      */
     private $currentId;
-
+    private $asyncCallPool;
     /**
      * When creating a DDPClient instance, a Websocket connection will be
      * automatically created. A meteor server should be running at $host:$port
@@ -53,6 +55,7 @@ class DDPClient {
         $this->listener->start();
         $this->currentId = 0;
         $this->methodMap = array();
+        $this->asyncCallPool = new ThreadPool();
     }
 
     /**
@@ -71,6 +74,18 @@ class DDPClient {
         $this->sender->rpc($this->currentId, $method, $args);
         $this->methodMap[$method] = $this->currentId;
         $this->currentId++;
+    }
+
+    /**
+     * @param $method
+     * @param $args
+     * @param $callback
+     */
+    function asyncCall($method, $args, $callback) {
+        $this->sender->rpc($this->currentId, $method, $args);
+        $this->methodMap[$method] = $this->currentId;
+        $this->currentId++;
+        $this->asyncCallPool->startCall($this, $method, $callback);
     }
 
     /**
@@ -97,9 +112,10 @@ class DDPClient {
         return $result;
     }
 
-    public function onMessage($message)
+    function onMessage($message)
     {
         if ($message !== null && isset($message->msg)) {
+            //echo 'Receiving ' ; print_r($message); echo PHP_EOL;
             switch ($message->msg) {
                 case 'ping' :
                     $this->onPing();
@@ -132,5 +148,4 @@ class DDPClient {
     {
         $this->listener->kill();
     }
-
 }

@@ -58,6 +58,7 @@ class DDPSender {
 
     private function send($msg)
     {
+        // echo 'Sending ' . $msg;
         $msg = WebSocketClient::draft10Encode($msg, 'text', true);
         if (!fwrite($this->sock, $msg)) {
             throw new \Exception('Socket write error! ' . PHP_EOL);
