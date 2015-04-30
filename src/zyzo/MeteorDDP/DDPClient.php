@@ -2,6 +2,8 @@
 namespace zyzo\MeteorDDP;
 require __DIR__ . '/../../../vendor/autoload.php';
 use zyzo\MeteorDDP\asynccall\ResultPolling;
+use zyzo\MeteorDDP\asynccall\ThreadPool;
+
 class DDPClient {
 
     /**
@@ -29,7 +31,7 @@ class DDPClient {
      * @var int
      */
     private $currentId;
-    private $pollingThread;
+    private $asyncCallPool;
     /**
      * When creating a DDPClient instance, a Websocket connection will be
      * automatically created. A meteor server should be running at $host:$port
@@ -53,6 +55,7 @@ class DDPClient {
         $this->listener->start();
         $this->currentId = 0;
         $this->methodMap = array();
+        $this->asyncCallPool = new ThreadPool();
     }
 
     /**
@@ -82,8 +85,7 @@ class DDPClient {
         $this->sender->rpc($this->currentId, $method, $args);
         $this->methodMap[$method] = $this->currentId;
         $this->currentId++;
-        $pollingThread = new ResultPolling($this, $method, $callback);
-        $pollingThread->start();
+        $this->asyncCallPool->startCall($this, $method, $callback);
     }
 
     /**
