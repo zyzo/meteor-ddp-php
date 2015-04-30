@@ -9,7 +9,13 @@ function resultHandler($a) {
     while ($i--);
     echo 'Result = ' . $a . PHP_EOL;
 }
-// anonymous function style*//*
+
+$client->asyncCall("foo", array(1), 'resultHandler');
+echo 'Doing some work..' . PHP_EOL;
+echo 'Doing some work..' . PHP_EOL;
+echo 'Doing some work..' . PHP_EOL;
+
+// anonymous function style
 $client->asyncCall("foo", array(1), function($a) {
     resultHandler($a);
 });
@@ -17,11 +23,6 @@ echo 'Doing some work..' . PHP_EOL;
 echo 'Doing some work..' . PHP_EOL;
 echo 'Doing some work..' . PHP_EOL;
 
-$client->asyncCall("foo", array(1), 'resultHandler');
-print_r("Doing some work");
-echo 'Doing some work..' . PHP_EOL;
-echo 'Doing some work..' . PHP_EOL;
-echo 'Doing some work..' . PHP_EOL;
 
 $i = 100000000;
 while ($i--);
