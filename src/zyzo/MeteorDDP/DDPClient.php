@@ -118,7 +118,7 @@ class DDPClient {
             //echo 'Receiving ' ; print_r($message); echo PHP_EOL;
             switch ($message->msg) {
                 case 'ping' :
-                    $this->onPing();
+                    $this->onPing(isset($message->id) ? $message->id : null);
                     break;
                 case 'result' :  // rpc method
                     $this->onResult($message);
@@ -131,9 +131,9 @@ class DDPClient {
         }
     }
 
-    private function onPing()
+    private function onPing($pingId)
     {
-        $this->sender->pong();
+        $this->sender->pong($pingId);
     }
 
     private function onResult($message) {
