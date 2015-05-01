@@ -87,7 +87,11 @@ class DDPListener extends \Thread{
         $json = $this->wsClient->draft10Decode($data);
         $parsed = json_decode($json->payload);
         if (json_last_error() === JSON_ERROR_NONE) {
-            $this->client->onMessage($parsed);
+            try {
+                $this->client->onMessage($parsed);
+            } catch (\Exception $e) {
+                Utils::_error_log($e->getMessage() . PHP_EOL);
+            }
         } else {
             return false;
         }

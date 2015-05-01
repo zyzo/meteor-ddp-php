@@ -38,6 +38,15 @@ class DDPSender {
         );
     }
 
+    public function sub($id, $name, $args)
+    {
+        $this->send(
+            '{"msg":"sub","name":"' . $name . '"' .
+            ($args !== null && count($args) > 0 ? '","params":' . $this->arrayToString($args) : '') .
+            ',"id":"' . $id . '"}'
+        );
+    }
+
     private function arrayToString($args, $isText = false)
     {
         $arrayLen = count($args);
@@ -60,7 +69,8 @@ class DDPSender {
 
     private function send($msg)
     {
-        echo 'Sending ' . $msg;
+
+        DDPClient::log('Sending ' . $msg . PHP_EOL);
         $msg = WebSocketClient::draft10Encode($msg, 'text', true);
         if (!fwrite($this->sock, $msg)) {
             throw new \Exception('Socket write error! ' . PHP_EOL);
