@@ -23,9 +23,11 @@ class DDPSender {
         );
     }
 
-    public function pong() {
+    public function pong($pingId) {
         $this->send(
-            '{"msg":"pong"}'
+            '{' .
+            ($pingId != null ? '"id:"' . $pingId . ',' : '') .
+            '"msg":"pong"}'
         );
     }
 
@@ -33,6 +35,15 @@ class DDPSender {
         $this->send(
             '{"msg":"method","method":"' . $method .
             '","params":' . $this->arrayToString($args) . ',"id":"' . $id . '"}'
+        );
+    }
+
+    public function sub($id, $name, $args)
+    {
+        $this->send(
+            '{"msg":"sub","name":"' . $name . '"' .
+            ($args !== null && count($args) > 0 ? '","params":' . $this->arrayToString($args) : '') .
+            ',"id":"' . $id . '"}'
         );
     }
 
@@ -58,7 +69,8 @@ class DDPSender {
 
     private function send($msg)
     {
-        // echo 'Sending ' . $msg;
+
+        DDPClient::log('Sending ' . $msg . PHP_EOL);
         $msg = WebSocketClient::draft10Encode($msg, 'text', true);
         if (!fwrite($this->sock, $msg)) {
             throw new \Exception('Socket write error! ' . PHP_EOL);
