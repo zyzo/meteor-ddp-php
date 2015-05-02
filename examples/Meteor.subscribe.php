@@ -13,7 +13,7 @@ $client->connectMongo('localhost:27017', array(), 'test');
 // Connect to meteor
 $client->connect();
 
-// Subscribe function named Foo
+// Subscribe to function Foo
 $client->subscribe('Foo', array());
 
 while (1) {}
