@@ -81,6 +81,8 @@ class DDPClient
     }
 
     /**
+     * Create a MongoDB connection with provided information. If this function is not 
+     * called (and succeded), DDP collection data will be ignored.
      * @param $server
      * @param $options
      * @param string $db
@@ -91,6 +93,7 @@ class DDPClient
     }
 
     /**
+     * Synchronous Meteor.call. Use DDPClient::getResult to poll the return value
      * @param $method
      * @param $args
      */
@@ -102,6 +105,8 @@ class DDPClient
     }
 
     /**
+     * Return the result of the method which has been called.
+     * null is returned if the result is not yet available (no answer from server)
      * @param string $method
      *         name of the invoked method
      * @return string the result in json format
@@ -127,6 +132,7 @@ class DDPClient
     }
 
     /**
+     * Asynchronous Meteor.call. $callback method will be called with the result as a parameter
      * @param $method
      * @param $args
      * @param $callback

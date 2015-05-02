@@ -34,6 +34,8 @@ $client->stop();
 ```
 Result = 42
 ```
+
+More use cases can be found in the [examples](https://github.com/zyzo/meteor-ddp-php/tree/devel/examples) folder.
 ### How to install
    This library is available via [composer](https://packagist.org/packages/zyzo/meteor-ddp-php), the dependency manager for PHP. Please add this in your composer.json :
 ```php
@@ -52,8 +54,7 @@ php composer.phar update
 
 
 ### Roadmap
-* support for mongodb => subscribe() method
-* asyncCall()
+  None (maybe subscribe() with callback method - if there's enough requests)
 
 > ####_Javascript for the server, PHP for the client_.
 
