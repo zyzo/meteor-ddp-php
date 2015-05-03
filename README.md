@@ -40,7 +40,7 @@ More use cases can be found in the [examples](https://github.com/zyzo/meteor-ddp
    This library is available via [composer](https://packagist.org/packages/zyzo/meteor-ddp-php), the dependency manager for PHP. Please add this in your composer.json :
 ```php
 "require" : {
-    "zyzo/meteor-ddp-php": "1.0.0"
+    "zyzo/meteor-ddp-php": "1.1.0"
 }
 ```
   and update composer to automatically retrieve the package :
@@ -54,9 +54,7 @@ php composer.phar update
 
 
 ### Roadmap
-  None (maybe subscribe() with callback method - if there's enough requests)
-
-> ####_Javascript for the server, PHP for the client_.
+  None
 
 ### Version
-1.0.0 
+1.1.0
