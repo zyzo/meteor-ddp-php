@@ -1,7 +1,7 @@
 <?php
 namespace zyzo\MeteorDDP;
 
-class DDPSender {
+class DDPSender extends \Threaded {
 
     private $sock;
 
@@ -47,7 +47,7 @@ class DDPSender {
         );
     }
 
-    private function arrayToString($args, $isText = false)
+    function arrayToString($args, $isText = false)
     {
         $arrayLen = count($args);
         if ($arrayLen === 0) {
@@ -67,7 +67,7 @@ class DDPSender {
         }
     }
 
-    private function send($msg)
+    function send($msg)
     {
 
         DDPClient::log('Sending ' . $msg . PHP_EOL);
