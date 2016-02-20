@@ -2,7 +2,7 @@
 namespace zyzo\MeteorDDP\tests;
 require __DIR__ . '/../vendor/autoload.php';
 use zyzo\MeteorDDP\DDPClient;
-
+DDPClient::enableLog();
 $client = new DDPClient('localhost', 3000);
 $client->connect();
 

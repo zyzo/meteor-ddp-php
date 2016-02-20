@@ -1,7 +1,7 @@
 <?php
 namespace zyzo\MeteorDDP;
 
-class DDPSender {
+class DDPSender extends \Threaded {
 
     private $sock;
 
@@ -23,9 +23,11 @@ class DDPSender {
         );
     }
 
-    public function pong() {
+    public function pong($pingId) {
         $this->send(
-            '{"msg":"pong"}'
+            '{' .
+            ($pingId != null ? '"id:"' . $pingId . ',' : '') .
+            '"msg":"pong"}'
         );
     }
 
@@ -36,7 +38,16 @@ class DDPSender {
         );
     }
 
-    private function arrayToString($args, $isText = false)
+    public function sub($id, $name, $args)
+    {
+        $this->send(
+            '{"msg":"sub","name":"' . $name . '"' .
+            ($args !== null && count($args) > 0 ? '","params":' . $this->arrayToString($args) : '') .
+            ',"id":"' . $id . '"}'
+        );
+    }
+
+    function arrayToString($args, $isText = false)
     {
         $arrayLen = count($args);
         if ($arrayLen === 0) {
@@ -56,8 +67,10 @@ class DDPSender {
         }
     }
 
-    private function send($msg)
+    function send($msg)
     {
+
+        DDPClient::log('Sending ' . $msg . PHP_EOL);
         $msg = WebSocketClient::draft10Encode($msg, 'text', true);
         if (!fwrite($this->sock, $msg)) {
             throw new \Exception('Socket write error! ' . PHP_EOL);

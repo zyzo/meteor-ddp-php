@@ -1,8 +1,10 @@
 <?php
 namespace zyzo\MeteorDDP;
 require __DIR__ . '/../../../vendor/autoload.php';
-
-class DDPClient {
+require_once __DIR__ . '/Utils.php';
+use zyzo\MeteorDDP\asynccall\ThreadPool;
+class DDPClient
+{
 
     /**
      * @var DDPSender
@@ -22,13 +24,21 @@ class DDPClient {
      */
     private $methodMap;
     /**
-     * @var Threaded
+     * @var \Threaded
      */
     private $results;
     /**
      * @var int
      */
     private $currentId;
+    /**
+     * @var ThreadPool
+     */
+    private $asyncCallPool;
+    /**
+     * @var MongoAdapter
+     */
+    private $mongoAdapter;
 
     /**
      * When creating a DDPClient instance, a Websocket connection will be
@@ -41,11 +51,14 @@ class DDPClient {
     {
         $errno = 0;
         $errstr = 'Error connecting to Meteor server';
-        $this->sock = fsockopen($host, $port, $errno, $errstr, 10);
+        if (!$this->sock = fsockopen($host, $port, $errno, $errstr, 10)) {
+            throw new \Exception('Error connecting to Meteor server');
+        }
         $this->sender = new DDPSender($this->sock);
         $this->results = new \Threaded();
+        $this->mongoAdapter = new MongoAdapter();
 
-        $handShakeMsg =  WebSocketClient::handshakeMessage($host . ':' . $port);
+        $handShakeMsg = WebSocketClient::handshakeMessage($host . ':' . $port);
         $this->listener = new DDPListener($this, $this->sender, $this->sock);
         if (fwrite($this->sock, $handShakeMsg) === false) {
             throw new \Exception('error:' . $errno . ':' . $errstr);
@@ -53,6 +66,7 @@ class DDPClient {
         $this->listener->start();
         $this->currentId = 0;
         $this->methodMap = array();
+        $this->asyncCallPool = new ThreadPool();
     }
 
     /**
@@ -61,19 +75,38 @@ class DDPClient {
      * @param int $version
      * @param array $supportedVersions
      */
-    public function connect($version = 1, $supportedVersions = array(1)) {
+    public function connect($version = 1, $supportedVersions = array(1))
+    {
         $this->sender->connect($version, $supportedVersions);
     }
 
-    public function checkConnection() {}
+    /**
+     * Create a MongoDB connection with provided information. If this function is not 
+     * called (and succeded), DDP collection data will be ignored.
+     * @param $server
+     * @param $options
+     * @param string $db
+     */
+    public function connectMongo($server, $options, $db = "meteor")
+    {
+        $this->mongoAdapter->connect($server, $options, $db);
+    }
 
-    function call($method, $args) {
+    /**
+     * Synchronous Meteor.call. Use DDPClient::getResult to poll the return value
+     * @param $method
+     * @param $args
+     */
+    public function call($method, $args)
+    {
         $this->sender->rpc($this->currentId, $method, $args);
         $this->methodMap[$method] = $this->currentId;
         $this->currentId++;
     }
 
     /**
+     * Return the result of the method which has been called.
+     * null is returned if the result is not yet available (no answer from server)
      * @param string $method
      *         name of the invoked method
      * @return string the result in json format
@@ -81,7 +114,8 @@ class DDPClient {
      * null if no result found
      * @throws \Exception
      */
-    function getResult($method) {
+    function getResult($method)
+    {
         $listener = $this->listener;
         if (!$listener->isRunning()) {
             throw new \Exception('Internal error : Socket listener has stopped running');
@@ -90,38 +124,34 @@ class DDPClient {
         if (array_key_exists($method, $this->methodMap)) {
             $id = $this->methodMap[$method];
             if (isset($this->results->$id)) {
-                $result = isset($this->results->$id) ? $this->results->$id : null;
+                $result = $this->results->$id;
                 unset($this->results->$id);
             }
         }
         return $result;
     }
 
-    public function onMessage($message)
+    /**
+     * Asynchronous Meteor.call. $callback method will be called with the result as a parameter
+     * @param $method
+     * @param $args
+     * @param $callback
+     */
+    public function asyncCall($method, $args, $callback)
     {
-        if ($message !== null && isset($message->msg)) {
-            switch ($message->msg) {
-                case 'ping' :
-                    $this->onPing();
-                    break;
-                case 'result' :  // rpc method
-                    $this->onResult($message);
-                    break;
-                default :
-                    //echo 'Unknown message ! ' . PHP_EOL;
-            }
-        } else {
-            // echo 'Unknown message ! ' . PHP_EOL;
-        }
+        $this->sender->rpc($this->currentId, $method, $args);
+        $this->methodMap[$method] = $this->currentId;
+        $this->currentId++;
+        $this->asyncCallPool->startCall($this, $method, $callback);
     }
 
-    private function onPing()
-    {
-        $this->sender->pong();
-    }
-
-    private function onResult($message) {
-        $this->results[$message->id] = $message->result;
+    /**
+     * @param $name
+     * @param array $args
+     */
+    public function subscribe($name, $args = array()) {
+        static $subId = 0;
+        $this->sender->sub($subId++, $name, $args);
     }
 
     /**
@@ -131,6 +161,87 @@ class DDPClient {
     public function stop()
     {
         $this->listener->kill();
+    }
+
+
+    /* INTERNAL USE SECTION */
+
+    private static $log = false;
+    public static function enableLog() {
+        DDPClient::$log = true;
+    }
+
+
+    static function log ($msg) {
+        if (DDPClient::$log) {
+            echo $msg;
+        }
+    }
+    function onMessage($message)
+    {
+        DDPClient::log('Receiving ' . json_encode($message) . PHP_EOL);
+        if ($message=== null || !isset($message->msg)) {
+            return;
+        }
+        switch ($message->msg) {
+            case 'ping' :
+                $this->onPing(isset($message->id) ? $message->id : null);
+                break;
+            case 'result' :
+                $this->onResult($message);
+                break;
+            case 'added' :
+                $this->onAdded($message);
+                break;
+            case 'changed' :
+                $this->onChanged($message);
+                break;
+            case 'removed' :
+                $this->onRemoved($message);
+                break;
+            case 'ready' :
+                $this->onReady($message);
+                break;
+            default :
+                break;
+        }
+    }
+
+    private function onPing($pingId)
+    {
+        $this->sender->pong($pingId);
+    }
+
+    private function onResult($message)
+    {
+        $this->results[$message->id] = $message->result;
+    }
+
+    private function onAdded($message)
+    {
+        $this->mongoAdapter->insertOrUpdate(
+            $message->collection,
+            $message->id,
+            isset($message->fields) ? $message->fields : null);
+    }
+
+    private function onChanged($message)
+    {
+        $this->mongoAdapter->update(
+            $message->collection,
+            $message->id,
+            isset($message->fields) ? $message->fields : null,
+            isset($message->cleared) ? $message->cleared : null);
+    }
+
+    private function onRemoved($message)
+    {
+        $this->mongoAdapter->remove($message->collection, $message->id);
+    }
+
+    private function onReady($message)
+    {
+        // stub
     }
 
 }

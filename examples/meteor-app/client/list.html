@@ -1,0 +1,14 @@
+<template name="list">
+    <h2>Awesome list</h2>
+    (Click on an element to make it disappear)
+    <ul>
+    {{#each fooList}}
+        <li><a href="#" class="node" data-id="{{_id}}">{{value}}</a></li>
+    {{/each}}
+    </ul>
+
+    <p>
+    <input id="addInput" type="text" value=""/>
+    <button id="addButton" type="button">Add to list</button>
+    </p>
+</template>

@@ -35,4 +35,16 @@ class Utils
             $offset += $width;
         }
     }
+
+    public static function _error_log($msg) {
+        if (Utils::displayErrorEnabled()) {
+            echo $msg;
+        }
+    }
+    private static function displayErrorEnabled()
+    {
+        $display_errors = ini_get('display_errors');
+        return $display_errors === '1'
+            || strcasecmp($display_errors, 'on') === 0;
+    }
 }
