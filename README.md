@@ -1,7 +1,9 @@
 # meteor-ddp-php 
 
+A [minimalist](http://www.becomingminimalist.com/) PHP library that implements DDP client, the realtime protocol for [Meteor](https://www.meteor.com/ddp) framework.
+   
 [![Join the chat at https://gitter.im/zyzo/meteor-ddp-php](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/zyzo/meteor-ddp-php?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-   A [minimalist](http://www.becomingminimalist.com/) PHP library that implements DDP client, the realtime protocol for [Meteor](https://www.meteor.com/ddp) framework.
+
   
 ### How to use
 
