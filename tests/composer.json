@@ -1,0 +1,5 @@
+{
+  "require" : {
+    "zyzo/meteor-ddp-php": "1.2.0"
+  }
+}

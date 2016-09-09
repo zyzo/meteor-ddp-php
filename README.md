@@ -1,10 +1,10 @@
-# meteor-ddp-php 
+# meteor-ddp-php
 
 A [minimalist](http://www.becomingminimalist.com/) PHP library that implements DDP client, the realtime protocol for [Meteor](https://www.meteor.com/ddp) framework.
-   
+
 [![Join the chat at https://gitter.im/zyzo/meteor-ddp-php](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/zyzo/meteor-ddp-php?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-  
+
 ### How to use
 
 Suppose you have declared a remote function `foo` in your meteor server code :
@@ -34,7 +34,7 @@ echo 'Result = ' . $a . PHP_EOL;
 $client->stop();
 ```
 
-===> 
+===>
 ```
 Result = 42
 ```
@@ -44,7 +44,7 @@ More use cases can be found in the [examples](https://github.com/zyzo/meteor-ddp
    This library is available via [composer](https://packagist.org/packages/zyzo/meteor-ddp-php), the dependency manager for PHP. Please add this in your composer.json :
 ```php
 "require" : {
-    "zyzo/meteor-ddp-php": "1.1.0"
+    "zyzo/meteor-ddp-php": "1.2.0"
 }
 ```
   and update composer to automatically retrieve the package :
@@ -52,13 +52,10 @@ More use cases can be found in the [examples](https://github.com/zyzo/meteor-ddp
 php composer.phar update
 ```
 
-### Requirements : pthreads
-   pthreads is not part of php core library, and installing it in an non-supported php environment is hard work. Here's a pretty good tutorial on how to set up the whole thing from scratch : 
-   http://eddmann.com/posts/compiling-php-5-5-with-zts-and-pthreads-support/
-
-
-### Roadmap
-  None
-
-### Version
-1.1.0
+### Run tests
+```shell
+cd tests
+// install composer.phar in this folder
+php composer.phar update
+php [filename].php
+```
