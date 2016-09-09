@@ -1,7 +1,7 @@
 <?php
 namespace zyzo\MeteorDDP\examples;
 use zyzo\MeteorDDP\DDPClient;
-require __DIR__ . '/../vendor/autoload.php';
+require 'vendor/autoload.php';
 
 $client = new DDPClient('localhost', 3000);
 $client->connect();
