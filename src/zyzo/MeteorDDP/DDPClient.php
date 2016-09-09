@@ -1,6 +1,6 @@
 <?php
 namespace zyzo\MeteorDDP;
-require __DIR__ . '/../../../vendor/autoload.php';
+require 'vendor/autoload.php';
 require_once __DIR__ . '/Utils.php';
 use zyzo\MeteorDDP\asynccall\ThreadPool;
 class DDPClient
@@ -81,7 +81,7 @@ class DDPClient
     }
 
     /**
-     * Create a MongoDB connection with provided information. If this function is not 
+     * Create a MongoDB connection with provided information. If this function is not
      * called (and succeded), DDP collection data will be ignored.
      * @param $server
      * @param $options

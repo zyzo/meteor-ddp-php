@@ -1,6 +1,6 @@
 <?php
 namespace zyzo\MeteorDDP\tests;
-require __DIR__ . '/../vendor/autoload.php';
+require 'vendor/autoload.php';
 use zyzo\MeteorDDP\Utils;
 use zyzo\MeteorDDP\WebSocketClient;
 

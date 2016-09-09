@@ -1,5 +1,5 @@
 <?php
-require __DIR__ . '/../vendor/autoload.php';
+require 'vendor/autoload.php';
 use zyzo\MeteorDDP\DDPClient;
 
 $client = new DDPClient('localhost', 3000);
