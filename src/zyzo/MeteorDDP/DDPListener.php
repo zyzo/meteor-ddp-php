@@ -30,13 +30,12 @@ class DDPListener {
     }
 
     public function micro_run() {
-      $data = fread($this->sock, 20000);
+      $data = $this->sock->Read();
       $this->process($data);
     }
 
     public function isRunning() {
-      $res = !feof($this->sock);
-      return $res;
+      return $this->sock->IsValid();
     }
 
     /**

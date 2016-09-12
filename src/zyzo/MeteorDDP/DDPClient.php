@@ -49,20 +49,21 @@ class DDPClient
      */
     public function __construct($host, $port = 3000)
     {
-        $errno = 0;
-        $errstr = 'Error connecting to Meteor server';
-        if (!$this->sock = fsockopen($host, $port, $errno, $errstr, 10)) {
-            throw new \Exception('Error connecting to Meteor server');
-        }
+        $address = "{$host}:{$port}";
+
+        $this->sock = new socket\FSocketPipe();
+        $this->sock->Open($address);
+
         $this->sender = new DDPSender($this->sock);
         $this->results = new \Threaded();
         $this->mongoAdapter = new MongoAdapter();
 
-        $handShakeMsg = WebSocketClient::handshakeMessage($host . ':' . $port);
+        $handShakeMsg = WebSocketClient::handshakeMessage($address);
         $this->listener = new DDPListener($this, $this->sender, $this->sock);
-        if (fwrite($this->sock, $handShakeMsg) === false) {
-            throw new \Exception('error:' . $errno . ':' . $errstr);
-        }
+
+        $this->sock->Write($handShakeMsg);
+
+
         $this->currentId = 0;
         $this->methodMap = array();
         $this->asyncCallPool = new ThreadPool();

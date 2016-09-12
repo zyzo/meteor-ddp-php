@@ -69,12 +69,10 @@ class DDPSender extends \Threaded {
 
     function send($msg)
     {
-
         DDPClient::log('Sending ' . $msg . PHP_EOL);
         $msg = WebSocketClient::draft10Encode($msg, 'text', true);
-        if (!fwrite($this->sock, $msg)) {
-            throw new \Exception('Socket write error! ' . PHP_EOL);
-        }
+
+        $this->sock->Write($msg);
     }
 
 }
