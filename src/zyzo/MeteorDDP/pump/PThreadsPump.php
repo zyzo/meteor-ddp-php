@@ -6,7 +6,7 @@ class PThreadsPump extends \Thread {
   private $stored_data = [];
 
   public function __construct() {
-    $reflection = new \ReflectionClass("BasePump");
+    $reflection = new \ReflectionClass("zyzo\MeteorDDP\pump\BasePump");
     $this->pump = $reflection->newInstanceArgs(func_get_args());
   }
 

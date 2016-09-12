@@ -60,6 +60,7 @@ class DDPClient
 
         $handShakeMsg = WebSocketClient::handshakeMessage($address);
         $this->listener = new DDPListener($this, $this->sender, $this->sock);
+        $this->listener->Start();
 
         $this->sock->Write($handShakeMsg);
 
@@ -120,7 +121,7 @@ class DDPClient
         if (!$listener->isRunning()) {
             throw new \Exception('Internal error : Socket listener has stopped running');
         }
-        $listener->micro_run();
+        $listener->MicroRun();
 
         $result = null;
         if (array_key_exists($method, $this->methodMap)) {
@@ -166,6 +167,7 @@ class DDPClient
      */
     public function stop()
     {
+        $this->listener->Stop();
     }
 
 
