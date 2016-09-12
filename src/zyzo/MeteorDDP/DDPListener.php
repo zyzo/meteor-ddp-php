@@ -3,7 +3,7 @@ namespace zyzo\MeteorDDP;
 
 use zyzo\MeteorDDP\enum\FrameStatus;
 
-class DDPListener extends \Thread{
+class DDPListener {
 
     private $sock;
     private $sender;
@@ -25,10 +25,18 @@ class DDPListener extends \Thread{
     }
 
     public function run() {
-        while (!feof($this->sock)) {
-            $data = fread($this->sock, 20000);
-            $this->process($data);
-        }
+      while ($this->isRunning())
+        $this->micro_run();
+    }
+
+    public function micro_run() {
+      $data = fread($this->sock, 20000);
+      $this->process($data);
+    }
+
+    public function isRunning() {
+      $res = !feof($this->sock);
+      return $res;
     }
 
     /**

@@ -63,7 +63,6 @@ class DDPClient
         if (fwrite($this->sock, $handShakeMsg) === false) {
             throw new \Exception('error:' . $errno . ':' . $errstr);
         }
-        $this->listener->start();
         $this->currentId = 0;
         $this->methodMap = array();
         $this->asyncCallPool = new ThreadPool();
@@ -120,6 +119,8 @@ class DDPClient
         if (!$listener->isRunning()) {
             throw new \Exception('Internal error : Socket listener has stopped running');
         }
+        $listener->micro_run();
+
         $result = null;
         if (array_key_exists($method, $this->methodMap)) {
             $id = $this->methodMap[$method];
@@ -154,13 +155,16 @@ class DDPClient
         $this->sender->sub($subId++, $name, $args);
     }
 
+    public function sender() {
+        return $this->sender;
+    }
+
     /**
      * Stop DDP communication and child thread(s). This must be called when the
      * DDP client is done talking to the server
      */
     public function stop()
     {
-        $this->listener->kill();
     }
 
 
