@@ -28,11 +28,29 @@ class PThreadsPump extends \Thread {
     return implode("", $chunk);
   }
 
+  public function isRunning() {
+    $thread_running = $this->isRunning();
+    $pump_running = $this->pump->isRunning();
+
+    if ($thread_running == $pump_running)
+      return $thread_running || $pump_running;
+
+    if (!$thread_running) {
+      throw new \Exception("Internal error : Pump thread died");
+    }
+
+    // De-sync state, completely stop
+    $this->pump->Stop();
+
+    return false;
+  }
+
   public function __call($method, $args) {
     return call_user_func_array([$this->pump, $method], $args);
   }
 
   public function Stop() {
     $this->Kill();
+    $this->pump->Stop();
   }
 }
