@@ -12,13 +12,15 @@ class DDPSender extends \Threaded {
 
     public function connect($version, $supported = []) {
         if (empty($supported)) {
-            $version = [$supported];
+            $supported = [$supported];
         }
 
         $packet = [
             "msg" => "connect",
-            "version" => $version,
-            "support" => $supported,
+            "version" => (string)$version,
+            "support" => array_map(function ($element) {
+                return (string)$element;
+            }, $supported),
         ];
 
         $this->send($packet);
