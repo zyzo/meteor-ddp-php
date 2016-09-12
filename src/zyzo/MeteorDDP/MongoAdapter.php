@@ -17,7 +17,7 @@ class MongoAdapter {
 
 
     public function __construct() {
-        $this->sharedInfo = new \Threaded();
+        $this->sharedInfo = [];
         $this->sharedInfo['initialized'] = true;
     }
 

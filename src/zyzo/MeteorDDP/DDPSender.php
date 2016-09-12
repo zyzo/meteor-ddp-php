@@ -1,7 +1,7 @@
 <?php
 namespace zyzo\MeteorDDP;
 
-class DDPSender extends \Threaded {
+class DDPSender {
 
     private $sock;
 

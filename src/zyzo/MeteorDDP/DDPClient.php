@@ -55,7 +55,7 @@ class DDPClient
         $this->sock->Open($address);
 
         $this->sender = new DDPSender($this->sock);
-        $this->results = new \Threaded();
+        $this->results = [];
         $this->mongoAdapter = new MongoAdapter();
 
         $handShakeMsg = WebSocketClient::handshakeMessage($address);
