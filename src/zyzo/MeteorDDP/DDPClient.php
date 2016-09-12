@@ -167,6 +167,7 @@ class DDPClient
      */
     public function stop()
     {
+        $this->sock->Stop();
         $this->listener->Stop();
     }
 
