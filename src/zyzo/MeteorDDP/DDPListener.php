@@ -8,6 +8,7 @@ class DDPListener extends \Thread{
     private $sock;
     private $sender;
     private $wsClient;
+    private $inDataFlow;
 
     private $unparsedBytes;
 
@@ -21,7 +22,8 @@ class DDPListener extends \Thread{
         $this->sock = $sock;
         $this->sender = $sender;
         $this->wsClient = new WebSocketClient();
-        $this->unparsedBytes = null;
+        $this->unparsedBytes = "";
+        $this->inDataFlow = false;
     }
 
     public function run() {
@@ -31,50 +33,62 @@ class DDPListener extends \Thread{
         }
     }
 
+    private function enterDataFlow() {
+        $data_begins = $this->wsClient->handshakeEnd($this->unparsedBytes);
+        if ($data_begins === false)
+            return;
+
+        $this->unparsedBytes = substr($this->unparsedBytes, $data_begins);
+        $this->inDataFlow = true;
+
+        $this->process();
+    }
+
     /**
      * @param $data
      * @return bool
      */
-    private function process($data) {
-        if ($data === null || strlen($data) < 2) {
-            return false;
-        }
-        $success = false;
+    private function process() {
+        if (strlen($this->unparsedBytes) < 2)
+            return;
+
         $wsClient = $this->wsClient;
-        $status = $wsClient->validFrame($data);
+        $status = $wsClient->validFrame($this->unparsedBytes);
+
         switch ($status->value()) {
             case (FrameStatus::NOT_VALID) :
-                if ($this->unparsedBytes !== null) {
-                    $success = $this->process($this->unparsedBytes . $data);
-                    if ($success) {
-                        $this->unparsedBytes = null;
-                    }
-                } else {
-                    $this->process(substr($data, 1));
-                }
+                var_dump($this->unparsedBytes);
+                throw new \Exception("Internal issue : Frame is not valid");
                 break;
             case (FrameStatus::MISSING_END) :
-                $this->unparsedBytes = $data;
                 break;
             case (FrameStatus::VALID) :
-                $success = $this->processValidFrame($data);
-                if (!$success) {
-                    $this->process(substr($data, 1));
-                }
-                break;
             case (FrameStatus::EXCEED_END) :
+
                 // doesn't work if invoke $this->wsClient->lastExceeds
                 $exceedBytesNum = $wsClient->lastExceeds();
-                $success = $this->processValidFrame(substr($data, 0, strlen($data) - $exceedBytesNum));
-                if ($success) {
-                    $exceedBytes = substr($data, strlen($data) - $exceedBytesNum);
-                    $this->process($exceedBytes);
-                } else {
-                    $this->process(substr($data, 1));
+
+                if ($exceedBytesNum == 0) {
+                    $valid_frame = $this->unparsedBytes;
+                    $this->unparsedBytes = "";
                 }
-                break;
+                else {
+                    $valid_frame = substr($this->unparsedBytes, 0, -$exceedBytesNum);
+                    $this->unparsedBytes = substr($this->unparsedBytes, -$exceedBytesNum, $exceedBytesNum);
+                }
+
+                $success = $this->processValidFrame($valid_frame);
+
+                if (!$success) {
+                    throw new \Exception('Internal issue : Unable to process DDP frame');
+                }
+
+                return $success;
+        default:
+            throw new \Exception("Internal issue : Unexpected frame status");
         }
-        return $success;
+
+        return false;
     }
 
     /**

@@ -13,6 +13,8 @@ class WebSocketClient {
     const CLOSE_FRAME_OPCODE = 8;
     const PING_FRAME_OPCODE = 9;
     const PONG_FRAME_OPCODE = 10;
+    const PAYLOAD_SIZE_16BIT_OPCODE = 126;
+    const PAYLOAD_SIZE_64BIT_OPCODE = 127;
     /**
      * @var int
      */
@@ -133,7 +135,13 @@ class WebSocketClient {
         }
 
         $payloadLen = ord($frame[1]) & WebSocketClient::PAYLOAD_LEN_MASK;
-        $result->payload = substr($frame, 2, $payloadLen);
+        $skip = 2;
+        if ($payloadLen == self::PAYLOAD_SIZE_16BIT_OPCODE)
+            $skip += 2;
+        if ($payloadLen == self::PAYLOAD_SIZE_64BIT_OPCODE)
+            $skip += 8;
+
+        $result->payload = substr($frame, $skip);
         $this->lastExceeds();
         return $result;
     }
@@ -154,6 +162,15 @@ class WebSocketClient {
         return $this->lastExceedBytes;
     }
 
+    public function handshakeEnd($text) {
+        $http_delimeter = "\r\n";
+        $end_delimeter = "{$http_delimeter}{$http_delimeter}";
+        $pos = strpos($text, $end_delimeter);
+        if ($pos === false)
+            return false;
+        return $pos + strlen($end_delimeter);
+    }
+
     /**
      * Helper function to detect if the argument is a valid WebSocket frame.
      * This function is "best effort", because it relies on some characteristics of WS framing and message
@@ -164,6 +181,7 @@ class WebSocketClient {
      *         valid status of the argument
      */
     public function validFrame($text) {
+
         // reserved bits must be 0, DDP defines no extension
         if ((ord($text[0]) & self::RSV_MASK) !== 0) {
             return new FrameStatus(FrameStatus::NOT_VALID);
@@ -184,8 +202,43 @@ class WebSocketClient {
         }
 
         // valid begin, check for length
-        $expectedLen = ord($text[1]) & WebSocketClient::PAYLOAD_LEN_MASK;
-        $len = strlen($text) - 2;
+        $payload_len_header = ord($text[1]) & WebSocketClient::PAYLOAD_LEN_MASK;
+        $header_size = 2;
+        $payload_len_size = 0;
+        $len = strlen($text) - $header_size;
+
+        // RFC 6455 Section 5.2
+
+        switch ($payload_len_header) {
+        default:
+            $expectedLen = $payload_len_header;
+            break;
+        case self::PAYLOAD_SIZE_16BIT_OPCODE:
+            $payload_len_size = 2;
+            $expectedLen = $header_size + $payload_len_size;
+            if ($len < $expectedLen)
+                return new FrameStatus(FrameStatus::MISSING_END);
+
+            // 'v' means big endian unsigned 16 bit
+            $unpack = unpack('n', substr($text, $header_size, $payload_len_size));
+            $expectedLen = current($unpack);
+            break;
+        case self::PAYLOAD_SIZE_64BIT_OPCODE:
+            $payload_len_size = 8;
+            $expectedLen = $header_size + $payload_len_size;
+            if ($len < $expectedLen)
+                return new FrameStatus(FrameStatus::MISSING_END);
+
+            // 'P' means big endian unsigned 64 bit
+            $unpack = unpack('J', substr($text, $header_size, $payload_len_size));
+            $expectedLen = current($unpack);
+            break;
+        }
+
+
+
+        $len = strlen($text) - $header_size - $payload_len_size;
+
         if ($len < $expectedLen) {
             return new FrameStatus(FrameStatus::MISSING_END);
         } else if ($len > $expectedLen) {
