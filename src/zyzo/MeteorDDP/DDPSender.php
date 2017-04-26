@@ -10,41 +10,63 @@ class DDPSender extends \Threaded {
         $this->sock = $sock;
     }
 
-    public function connect($version, $supported) {
-        $this->send(
-            '{"msg":"connect","version":"'. $version . '","support": ' .
-            $this->arrayToString($supported, true). '}', 'text'
-        );
+    public function connect($version, $supported = []) {
+        if (empty($supported)) {
+            $supported = [$supported];
+        }
+
+        $packet = [
+            "msg" => "connect",
+            "version" => (string)$version,
+            "support" => array_map(function ($element) {
+                return (string)$element;
+            }, $supported),
+        ];
+
+        $this->send($packet);
     }
 
     public function ping() {
-        $this->send(
-            '{"msg":"ping"}'
-        );
+        $packet = [
+            "msg" => "ping",
+        ];
+
+        $this->send($packet);
     }
 
-    public function pong($pingId) {
-        $this->send(
-            '{' .
-            ($pingId != null ? '"id:"' . $pingId . ',' : '') .
-            '"msg":"pong"}'
-        );
+    public function pong($pingId = '') {
+        $packet = [
+            "msg" => "pong",
+            "id" => $pingId,
+        ];
+
+        $this->send($packet);
+
     }
 
-    public function rpc($id, $method, $args) {
-        $this->send(
-            '{"msg":"method","method":"' . $method .
-            '","params":' . $this->arrayToString($args) . ',"id":"' . $id . '"}'
-        );
+    public function rpc($id, $method, $args = []) {
+        $packet = [
+            "msg" => "method",
+            "method" => $method,
+            "params" => $args,
+            "id" => $id,
+        ];
+
+        $this->send($packet);
     }
 
-    public function sub($id, $name, $args)
+    public function sub($id, $name, $args = null)
     {
-        $this->send(
-            '{"msg":"sub","name":"' . $name . '"' .
-            ($args !== null && count($args) > 0 ? '","params":' . $this->arrayToString($args) : '') .
-            ',"id":"' . $id . '"}'
-        );
+        $packet = [
+            "msg" => "sub",
+            "name" => $name,
+            "id" => $id,
+        ];
+
+        if (!empty($args))
+            $packet['params'] = $args;
+
+        $this->send($packet);
     }
 
     function arrayToString($args, $isText = false)
@@ -53,22 +75,14 @@ class DDPSender extends \Threaded {
         if ($arrayLen === 0) {
             return null;
         } else {
-            $arrayStr = '[';
-            for ($i = 0; $args !== null && $i < $arrayLen; $i++) {
-                if ($isText)
-                    $arrayStr .= '"' . $args[$i] . '"';
-                else
-                    $arrayStr .= $args[$i];
-                if ($i !== $arrayLen - 1)
-                    $arrayStr .= ',';
-            }
-            $arrayStr .= ']';
-            return $arrayStr;
+            return json_encode($args);
         }
     }
 
     function send($msg)
     {
+        if (is_array($msg))
+            $msg = $this->arrayToString($msg);
 
         DDPClient::log('Sending ' . $msg . PHP_EOL);
         $msg = WebSocketClient::draft10Encode($msg, 'text', true);
